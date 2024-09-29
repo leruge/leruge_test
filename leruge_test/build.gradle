@@ -1,4 +1,20 @@
+plugins {
+    id 'maven-publish'
+}
 apply plugin: 'com.android.library'
+
+afterEvaluate {
+    android.libraryVariants.each {variant->
+        publishing.publications.create(variant.name,MavenPublication){
+            from components.findByName(variant.name)
+            groupId = 'com.github.leruge'//自定义
+            artifactId = 'leruge_test'//自定义
+            version = '1.0.1'//自定义
+        }
+    }
+}
+
+
 
 android {
     compileSdkVersion 29
