@@ -1,0 +1,60 @@
+plugins {
+    alias(libs.plugins.android.library)
+    id 'maven-publish'
+}
+
+afterEvaluate {
+    publishing {
+        // 当前依赖库的版本号，方便我们开发者自己查看，同时发布到 MavenLocal 也是用的这个版本号（Jitpack不会使用到）
+        def versionName = "1.0.1"
+        publications {
+            release(MavenPublication) {
+                // 自定义属性 这里头是artifacts的配置信息，不填会采用默认的
+                groupId = 'com.test.library' // 依赖库的 Group Id（Jitpack不会使用到）
+                artifactId = 'library' // 依赖库的名称，单组件发布时随意填写，多组件时即为此组件的 ArtifactId（Jitpack不会使用到）
+                version = versionName
+                // 增加上传源码的 task
+                artifact sourceJar
+                // 必须有这个 否则不会上传AAR包  将bundleReleaseAar任务的单个输出文件作为发布的AAR文件。这样，该AAR文件就会成为 MavenPublication 的 artifact 并进行发布
+                afterEvaluate { artifact(tasks.getByName("bundleReleaseAar")) }
+            }
+        }
+    }
+}
+
+task sourceJar(type: Jar) {
+    from android.sourceSets.main.java.srcDirs
+    archiveClassifier = "sources"
+}
+
+android {
+    namespace 'com.test.library'
+    compileSdk 34
+
+    defaultConfig {
+        minSdk 28
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        consumerProguardFiles "consumer-rules.pro"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+}
+
+dependencies {
+
+    implementation libs.androidx.appcompat
+    implementation libs.material
+    testImplementation libs.junit
+    androidTestImplementation libs.androidx.junit
+    androidTestImplementation libs.androidx.espresso.core
+}
